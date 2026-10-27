@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leaflet 地図回転サンプル</title>
+    
+    <!-- 1. LeafletのCSSとJSを読み込む -->
+    <link rel="stylesheet" href="https://unpkg.com" />
+    <script src="https://unpkg.com"></script>
+
+    <!-- 2. 地図を回転させるプラグイン(leaflet-rotate)を読み込む -->
+    <script src="https://unpkg.com"></script>
+
+    <style>
+        /* 地図を表示するエリアのサイズを指定 */
+        #map {
+            width: 100%;
+            height: 600px;
+        }
+        .controls {
+            margin: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="controls">
+        <label for="angle">地図の角度: </label>
+        <!-- スライダーで角度を変更できるようにする -->
+        <input type="range" id="angle" min="0" max="360" value="45" oninput="rotateMap(this.value)">
+        <span id="angle-val">45°</span>
+    </div>
+
+    <!-- 地図を表示するコンテナ -->
+    <div id="map"></div>
+
+    <script>
+        // 3. マップの初期化（rotateオプションを有効化）
+        var map = L.map('map', {
+            center: [35.681236, 139.767125], // 東京駅周辺
+            zoom: 15,
+            rotate: true,               // 回転機能を有効にする
+            bearing: 45,                // 初期角度を45度に設定（時計回り）
+            touchRotate: true,          // スマホでの2本指回転を許可
+            rotateControl: true         // 右上に方位磁針（コンパス）を表示
+        });
+
+        // 4. OpenStreetMapのタイルレイヤーを追加
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // スライダーを動かしたときに角度を変更する関数
+        function rotateMap(deg) {
+            document.getElementById('angle-val').innerText = deg + '°';
+            // プラグインが提供する setBearing メソッドで角度（度数）を適用
+            map.setBearing(deg);
+        }
+    </script>
+</body>
+</html>
