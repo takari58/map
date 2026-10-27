@@ -4,8 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Leaflet 地図回転サンプル</title>
-    
-    <!-- 文字列分割によるURLカット防御を維持したまま、正しいURLに変更 -->
+
     <script>
         (function() {
             window.addEventListener('DOMContentLoaded', function() {
@@ -74,10 +73,8 @@
 
     <script>
         var map;
-
         function initMap() {
             if (typeof L === 'undefined' || typeof L.map === 'undefined') return;
-
             // マップの初期化（プラグインのrotate機能を有効化）
             map = L.map('map', {
                 center: [35.681236, 139.767125], // 東京駅周辺
@@ -87,14 +84,12 @@
                 touchRotate: true,          // スマホでの2本指回転を許可
                 rotateControl: true         // 右上に方位磁針を表示
             });
-
             // OpenStreetMapのタイルを追加
             var osmUrl = ['https:/', '{s}.tile.openstreetmap.org', '{z}', '{x}', '{y}.png'].join('/');
             L.tileLayer(osmUrl, {
                 attribution: '&copy; <a href="https://openstreetmap.org" target="_blank">OpenStreetMap</a> contributors'
             }).addTo(map);
         }
-
         // スライダー連動関数
         function rotateMap(deg) {
             document.getElementById('angle-val').innerText = deg + '°';
