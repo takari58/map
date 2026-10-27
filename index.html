@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Leaflet 地図回転サンプル</title>
     
-    <!-- システムによるURLカットを防ぐため、文字列を分割して動的追加します -->
+    <!-- 文字列分割によるURLカット防御を維持したまま、正しいURLに変更 -->
     <script>
         (function() {
             window.addEventListener('DOMContentLoaded', function() {
@@ -20,9 +20,9 @@
                 js1.src = ['https:/', 'unpkg.com', 'leaflet@1.9.4', 'dist', 'leaflet.js'].join('/');
                 
                 js1.onload = function() {
-                    // 3. 本体が読み終わったら、回転プラグインを追加
+                    // 3. 本体が読み終わったら、正しい回転プラグインを追加 (404エラーを修正)
                     var js2 = document.createElement('script');
-                    js2.src = ['https:/', 'unpkg.com', '@jjimenezshaw', 'leaflet-rotate@0.2.8', 'dist', 'leaflet-rotate.js'].join('/');
+                    js2.src = ['https:/', 'unpkg.com', 'leaflet-rotate@0.2.8', 'dist', 'leaflet-rotate.js'].join('/');
                     
                     js2.onload = function() {
                         // 4. プラグインまで完全に準備ができたら地図を初期化
@@ -36,7 +36,6 @@
     </script>
 
     <style>
-        /* HTMLとBODYの隙間をなくし、地図を確実に表示させるための重要設定 */
         html, body {
             margin: 0;
             padding: 0;
@@ -47,7 +46,7 @@
             position: absolute;
             top: 10px;
             left: 10px;
-            z-index: 1000; /* 地図より手前に表示 */
+            z-index: 1000;
             background: rgba(255, 255, 255, 0.9);
             padding: 10px 15px;
             border-radius: 8px;
@@ -56,8 +55,8 @@
         }
         #map {
             width: 100%;
-            height: 100%; /* 画面いっぱいに地図を表示 */
-            background: #f0f0f0; /* 地図が読み込まれる前の背景色 */
+            height: 100%;
+            background: #f0f0f0;
         }
     </style>
 </head>
@@ -77,9 +76,9 @@
         var map;
 
         function initMap() {
-            // L.map が確実に存在することを確認してから初期化
             if (typeof L === 'undefined' || typeof L.map === 'undefined') return;
 
+            // マップの初期化（プラグインのrotate機能を有効化）
             map = L.map('map', {
                 center: [35.681236, 139.767125], // 東京駅周辺
                 zoom: 15,
@@ -92,7 +91,7 @@
             // OpenStreetMapのタイルを追加
             var osmUrl = ['https:/', '{s}.tile.openstreetmap.org', '{z}', '{x}', '{y}.png'].join('/');
             L.tileLayer(osmUrl, {
-                attribution: '&copy; OpenStreetMap'
+                attribution: '&copy; <a href="https://openstreetmap.org" target="_blank">OpenStreetMap</a> contributors'
             }).addTo(map);
         }
 
