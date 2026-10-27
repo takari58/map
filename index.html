@@ -3,61 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Leaflet 地図回転サンプル</title>
-    
-    <!-- 1. Leaflet本体のCSSとJSを正しく読み込む -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-    <!-- 2. 地図を回転させるプラグイン(leaflet-rotate)の正しいURL -->
-    <script src="https://unpkg.com/@jjimenezshaw/leaflet-rotate@2.0.8/dist/leaflet-rptate.js"></script>
-
+    <title>Leaflet 地図回転サンプル（CSS直書き版）</title>
     <style>
-        /* 地図を表示するエリアのサイズを指定 */
+        /* --- Leafletの必須CSSを直書き --- */
+        .leaflet-pane, .leaflet-tile, .leaflet-marker-icon, .leaflet-marker-shadow, .leaflet-tile-container, .leaflet-pane > svg, .leaflet-pane > canvas, .leaflet-zoom-box, .leaflet-image-layer, .leaflet-layer { position: absolute; left: 0; top: 0; }
+        .leaflet-container { overflow: hidden; -webkit-tap-highlight-color: transparent; font-family: "Helvetica Neue", Arial, Helvetica, sans-serif; background: #ddd; outline-offset: 1px; }
+        .leaflet-tile, .leaflet-marker-icon, .leaflet-marker-shadow { -webkit-user-select: none; -moz-user-select: none; user-select: none; -webkit-user-drag: none; }
+        .leaflet-tile::selection { background: transparent; }
+        .leaflet-safari .leaflet-tile { image-rendering: -webkit-optimize-contrast; }
+        .leaflet-safari .leaflet-tile-container { width: 0; height: 0; }
+        .leaflet-tile { filter: inherit; visibility: hidden; }
+        .leaflet-tile-loaded { visibility: inherit; }
+        .leaflet-zoom-box { width: 0; height: 0; -moz-box-sizing: border-box; box-sizing: border-box; z-index: 800; }
+        .leaflet-overlay-pane { z-index: 400; }
+        .leaflet-tile-pane    { z-index: 200; }
+        .leaflet-map-pane canvas { z-index: 100; }
+        .leaflet-map-pane svg    { z-index: 200; }
+        
+        /* --- 地図のレイアウト設定 --- */
         #map {
             width: 100%;
             height: 600px;
+            margin-top: 10px;
+            border: 1px solid #ccc;
         }
         .controls {
             margin: 10px;
             font-family: sans-serif;
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        
+        /* --- 簡易的に地図全体を回転させるCSS --- */
+        .rotate-wrapper {
+            transition: transform 0.1s ease-out;
+            transform-origin: center center;
         }
     </style>
 </head>
 <body>
 
     <div class="controls">
-        <label for="angle">地図の角度: </label>
-        <!-- スライダーで角度を変更できるようにする -->
-        <input type="range" id="angle" min="0" max="360" value="45" oninput="rotateMap(this.value)">
-        <span id="angle-val">45°</span>
+        <label for="angle"><b>地図の角度: </b></label>
+        <input type="range" id="angle" min="0" max="360" value="0" oninput="rotateMap(this.value)">
+        <span id="angle-val">0°</span>
     </div>
 
-    <!-- 地図を表示するコンテナ -->
-    <div id="map"></div>
+    <!-- 地図を包むコンテナ（これをCSSで直接回します） -->
+    <div style="overflow:hidden; width:100%; height:600px; position:relative;">
+        <div id="map" class="rotate-wrapper"></div>
+    </div>
+
+    <!-- 通常のLeaflet（バージョン1.9.4）をCDNで読み込み -->
+    <script src="https://cloudflare.com"></script>
 
     <script>
-        // 3. マップの初期化（rotateオプションを有効化）
+        // 通常のLeafletマップを初期化
         var map = L.map('map', {
-            center: [35.681236, 139.767125], // 東京駅周辺
-            zoom: 15,
-            rotate: true,               // 回転機能を有効にする
-            bearing: 45,                // 初期角度を45度に設定（時計回り）
-            touchRotate: true,          // スマホでの2本指回転を許可
-            rotateControl: true         // 右上に方位磁針（コンパス）を表示
+            center: [35.681236, 139.767125], // 東京駅
+            zoom: 15
         });
 
-        // 4. OpenStreetMapのタイルレイヤーを追加
+        // OpenStreetMapを追加
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors'
+            attribution: '&copy; OpenStreetMap'
         }).addTo(map);
 
-        // スライダーを動かしたときに角度を変更する関数
+        // スライダーを動かしたときに、CSSのtransformで地図コンテナごと物理的に回転させる関数
         function rotateMap(deg) {
             document.getElementById('angle-val').innerText = deg + '°';
-            // プラグインが提供する setBearing メソッドで角度（度数）を適用
-            map.setBearing(deg);
+            
+            // 地図の要素をCSSで直接回転
+            var mapContainer = document.getElementById('map');
+            mapContainer.style.transform = 'scale(1.4) rotate(' + deg + 'deg)';
+            
+            // 回転による隙間を隠すために、少し拡大（scale）させています
+            map.invalidateSize(); 
         }
+        
+        // 初期状態のサイズ調整
+        document.getElementById('map').style.transform = 'scale(1.4) rotate(0deg)';
     </script>
 </body>
 </html>
