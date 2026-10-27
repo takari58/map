@@ -3,90 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Leaflet 地図回転サンプル（完全自己完結版）</title>
+    <title>Leaflet 地図回転サンプル</title>
+    
+    <!-- 1. Leaflet本体のCSSとJSを正しく読み込む -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- 2. 地図を回転させるプラグイン(leaflet-rotate)の正しいURL -->
+    <script src="https://unpkg.com/@jjimenezshaw/leaflet-rotate@2.0.8/dist/leaflet-rptate.js"></script>
+
     <style>
-        /* --- 画面全体の基本スタイル --- */
-        body { margin: 0; padding: 10px; font-family: sans-serif; background: #fafafa; }
-        .controls { background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 10px; display: inline-block; }
-        .controls label { font-weight: bold; margin-right: 10px; }
-        .controls input { vertical-align: middle; cursor: pointer; width: 200px; }
-        
-        /* --- 地図を表示するエリアのスタイル --- */
-        .map-window { overflow: hidden; width: 100%; height: 600px; position: relative; border-radius: 8px; border: 1px solid #ddd; background: #eee; }
-        #map { width: 100%; height: 600px; position: absolute; left: 0; top: 0; transition: transform 0.1s ease-out; transform-origin: center center; }
-        
-        /* --- 簡易OSMマップのタイル設定 --- */
-        .tile-grid { display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(4, 1fr); width: 100%; height: 100%; position: absolute; }
-        .tile { border: 1px solid #e0e0e0; box-sizing: border-box; background: #f4f3f0; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #666; font-size: 12px; position: relative; text-align: center; padding: 5px; }
-        .tile b { color: #222; font-size: 14px; margin-bottom: 4px; }
-        .landmark { position: absolute; background: rgba(0,0,255,0.1); border: 2px solid #3388ff; border-radius: 4px; padding: 4px; font-weight: bold; color: #0044cc; font-size: 13px; }
-        
-        /* 方位マーク */
-        .compass { position: absolute; top: 20px; right: 20px; width: 40px; height: 40px; background: #fff; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.2); display: flex; justify-content: center; align-items: center; font-weight: bold; color: red; font-size: 16px; border: 2px solid #ccc; transition: transform 0.1s ease-out; }
+        /* 地図を表示するエリアのサイズを指定 */
+        #map {
+            width: 100%;
+            height: 600px;
+        }
+        .controls {
+            margin: 10px;
+            font-family: sans-serif;
+        }
     </style>
 </head>
 <body>
 
-    <!-- 操作パネル -->
     <div class="controls">
-        <label for="angle">🧭 地図の角度:</label>
-        <input type="range" id="angle" min="0" max="360" value="0" oninput="rotateMap(this.value)">
-        <span id="angle-val" style="font-weight: bold; font-size: 16px;">0°</span>
+        <label for="angle">地図の角度: </label>
+        <!-- スライダーで角度を変更できるようにする -->
+        <input type="range" id="angle" min="0" max="360" value="45" oninput="rotateMap(this.value)">
+        <span id="angle-val">45°</span>
     </div>
 
-    <!-- 地図表示ウィンドウ -->
-    <div class="map-window">
-        <!-- この要素をCSSで直接回転させます -->
-        <div id="map">
-            <!-- 擬似的に再現した高精細なOpenStreetMapのグリッドマップ -->
-            <div class="tile-grid">
-                <div class="tile"><b>秋葉原エリア</b><span>千代田区</span></div>
-                <div class="tile"><b>御茶ノ水エリア</b><span>神田駿河台</span></div>
-                <div class="tile"><b>神田エリア</b><span>中央通り</span></div>
-                <div class="tile"><b>日本橋エリア</b><span>老舗街</span></div>
-                
-                <div class="tile"><b>大手町エリア</b><span>オフィス街</span></div>
-                <div class="tile" style="background: #e1f5fe;">
-                    <!-- 東京駅のマーカー -->
-                    <div class="landmark" style="top: 30%; left: 30%;">📍 東京駅 (現在地)</div>
-                    <b>丸の内エリア</b><span>皇居東側</span>
-                </div>
-                <div class="tile"><b>八重洲エリア</b><span>バスターミナル</span></div>
-                <div class="tile"><b>京橋エリア</b><span>美術街</span></div>
-                
-                <div class="tile" style="background: #e8f5e9;"><b>皇居外苑</b><span>緑地エリア</span></div>
-                <div class="tile"><b>日比谷エリア</b><span>日比谷公園</span></div>
-                <div class="tile"><b>銀座エリア</b><span>数寄屋橋</span></div>
-                <div class="tile"><b>東銀座エリア</b><span>歌舞伎座</span></div>
-                
-                <div class="tile"><b>新橋エリア</b><span>SL広場</span></div>
-                <div class="tile"><b>汐留エリア</b><span>高層ビル群</span></div>
-                <div class="tile"><b>築地エリア</b><span>旧市場周辺</span></div>
-                <div class="tile"><b>勝どきエリア</b><span>タワマン街</span></div>
-            </div>
-        </div>
-        
-        <!-- 右上のコンパス（北の向き） -->
-        <div id="compass" class="compass">▲N</div>
-    </div>
+    <!-- 地図を表示するコンテナ -->
+    <div id="map"></div>
 
     <script>
-        // スライダーを動かしたときに実行されるプログラム
-        function rotateMap(deg) {
-            // 画面の角度テキストを更新
-            document.getElementById('angle-val').innerText = deg + '°';
-            
-            // 1. 地図コンテナを物理的に回転（隙間が見えないよう1.5倍に拡大）
-            var mapElement = document.getElementById('map');
-            mapElement.style.transform = 'scale(1.5) rotate(' + deg + 'deg)';
-            
-            // 2. 右上のコンパス（方位磁針）も地図とは逆方向に回して、常に「北」の向きをキープ
-            var compassElement = document.getElementById('compass');
-            compassElement.style.transform = 'rotate(' + (-deg) + 'deg)';
-        }
+        // 3. マップの初期化（rotateオプションを有効化）
+        var map = L.map('map', {
+            center: [35.681236, 139.767125], // 東京駅周辺
+            zoom: 15,
+            rotate: true,               // 回転機能を有効にする
+            bearing: 45,                // 初期角度を45度に設定（時計回り）
+            touchRotate: true,          // スマホでの2本指回転を許可
+            rotateControl: true         // 右上に方位磁針（コンパス）を表示
+        });
 
-        // 最初の初期化（隙間隠しの拡大だけ適用）
-        document.getElementById('map').style.transform = 'scale(1.5) rotate(0deg)';
+        // 4. OpenStreetMapのタイルレイヤーを追加
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // スライダーを動かしたときに角度を変更する関数
+        function rotateMap(deg) {
+            document.getElementById('angle-val').innerText = deg + '°';
+            // プラグインが提供する setBearing メソッドで角度（度数）を適用
+            map.setBearing(deg);
+        }
     </script>
 </body>
 </html>
