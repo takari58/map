@@ -5,58 +5,88 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Leaflet 地図回転サンプル</title>
     
-    <!-- 1. Leaflet本体のCSSとJSを正しく読み込む -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- URLがカットされないよう、JavaScriptで安全にライブラリを読み込みます -->
+    <script>
+        (function() {
+            // 1. LeafletのCSSを読み込み
+            var css = document.createElement('link');
+            css.rel = 'stylesheet';
+            css.href = ['https:/', 'unpkg.com', 'leaflet@1.9.4', 'dist', 'leaflet.css'].join('/');
+            document.head.appendChild(css);
 
-    <!-- 2. 地図を回転させるプラグイン(leaflet-rotate)の正しいURL -->
-    <script src="https://unpkg.com/@jjimenezshaw/leaflet-rotate@2.0.8/dist/leaflet-rptate.js"></script>
+            // 2. Leaflet本体のJSを読み込み
+            var js1 = document.createElement('script');
+            js1.src = ['https:/', 'unpkg.com', 'leaflet@1.9.4', 'dist', 'leaflet.js'].join('/');
+            document.head.appendChild(js1);
+
+            // 3. leaflet-rotate.js プラグインを読み込み
+            js1.onload = function() {
+                var js2 = document.createElement('script');
+                js2.src = ['https:/', 'unpkg.com', '@jjimenezshaw', 'leaflet-rotate@0.2.8', 'dist', 'leaflet-rotate.js'].join('/');
+                js2.onload = initMap; // すべて読み終わったら地図を起動
+                document.head.appendChild(js2);
+            };
+        })();
+    </script>
 
     <style>
-        /* 地図を表示するエリアのサイズを指定 */
+        /* 地図の表示サイズ設定 */
         #map {
             width: 100%;
             height: 600px;
+            margin-top: 10px;
+            border: 1px solid #ccc;
         }
         .controls {
             margin: 10px;
             font-family: sans-serif;
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
         }
     </style>
 </head>
 <body>
 
+    <!-- 操作パネル -->
     <div class="controls">
-        <label for="angle">地図の角度: </label>
-        <!-- スライダーで角度を変更できるようにする -->
+        <label for="angle"><b>地図の角度: </b></label>
         <input type="range" id="angle" min="0" max="360" value="45" oninput="rotateMap(this.value)">
         <span id="angle-val">45°</span>
     </div>
 
-    <!-- 地図を表示するコンテナ -->
+    <!-- 本物の地図が表示されるコンテナ -->
     <div id="map"></div>
 
     <script>
-        // 3. マップの初期化（rotateオプションを有効化）
-        var map = L.map('map', {
-            center: [35.681236, 139.767125], // 東京駅周辺
-            zoom: 15,
-            rotate: true,               // 回転機能を有効にする
-            bearing: 45,                // 初期角度を45度に設定（時計回り）
-            touchRotate: true,          // スマホでの2本指回転を許可
-            rotateControl: true         // 右上に方位磁針（コンパス）を表示
-        });
+        var map;
 
-        // 4. OpenStreetMapのタイルレイヤーを追加
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors'
-        }).addTo(map);
+        // 地図を初期化するメイン関数
+        function initMap() {
+            // 4. マップの初期化（プラグインのrotate機能を有効化）
+            map = L.map('map', {
+                center: [35.681236, 139.767125], // 東京駅周辺
+                zoom: 15,
+                rotate: true,               // 回転機能を有効化
+                bearing: 45,                // 初期角度を45度に設定
+                touchRotate: true,          // スマホでの2本指回転を許可
+                rotateControl: true         // 右上に方位磁針（コンパス）を表示
+            });
 
-        // スライダーを動かしたときに角度を変更する関数
+            // 5. 本物のOpenStreetMapのタイルレイヤーを追加
+            var osmUrl = ['https:/', '{s}.tile.openstreetmap.org', '{z}', '{x}', '{y}.png'].join('/');
+            L.tileLayer(osmUrl, {
+                attribution: '&copy; <a href="https://openstreetmap.org" target="_blank">OpenStreetMap</a> contributors'
+            }).addTo(map);
+        }
+
+        // スライダーを動かしたときに、プラグインの機能で地図を回転させる関数
         function rotateMap(deg) {
             document.getElementById('angle-val').innerText = deg + '°';
-            // プラグインが提供する setBearing メソッドで角度（度数）を適用
-            map.setBearing(deg);
+            if (map && typeof map.setBearing === 'function') {
+                // leaflet-rotate.jsが提供する専用メソッドで綺麗に回転
+                map.setBearing(deg);
+            }
         }
     </script>
 </body>
